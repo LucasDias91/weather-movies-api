@@ -10,6 +10,9 @@ TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "").strip()
 OPENWEATHER_BASE_URL = os.environ.get(
     "OPENWEATHER_BASE_URL", "https://api.openweathermap.org"
 ).rstrip("/")
+OPENWEATHER_ICON_BASE_URL = os.environ.get(
+    "OPENWEATHER_ICON_BASE_URL", "https://openweathermap.org/img/wn"
+).rstrip("/")
 TMDB_BASE_URL = os.environ.get("TMDB_BASE_URL", "https://api.themoviedb.org/3").rstrip("/")
 TMDB_IMAGE_BASE_URL = os.environ.get(
     "TMDB_IMAGE_BASE_URL", "https://image.tmdb.org/t/p/w500"

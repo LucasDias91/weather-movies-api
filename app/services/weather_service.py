@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unicodedata
 
 import httpx
@@ -8,9 +9,17 @@ from app.core.config import (
     HTTP_TIMEOUT_SECONDS,
     OPENWEATHER_API_KEY,
     OPENWEATHER_BASE_URL,
+    OPENWEATHER_ICON_BASE_URL,
 )
 from app.schemas.recommendation import PlaceSuggestion, WeatherInfo
-from app.services.errors import CityNotFoundError, ExternalApiError, MissingApiKeyError
+from app.services.errors import (
+    CityNotFoundError,
+    ExternalApiError,
+    InvalidWeatherIconError,
+    MissingApiKeyError,
+)
+
+_ICON_CODE = re.compile(r"^(01|02|03|04|09|10|11|13|50)[dn]$")
 
 
 _MUNICIPALITIES: list[tuple[str, str]] | None = None
@@ -158,3 +167,21 @@ class WeatherService:
             )
         brazilian = [place for place in places if (place.country or "").upper() == "BR"]
         return (brazilian or places)[:limit]
+
+    def fetch_icon(self, icon: str) -> tuple[bytes, str]:
+        if not _ICON_CODE.fullmatch(icon):
+            raise InvalidWeatherIconError(icon)
+
+        url = f"{OPENWEATHER_ICON_BASE_URL}/{icon}@2x.png"
+        try:
+            response = httpx.get(url, timeout=HTTP_TIMEOUT_SECONDS)
+        except httpx.HTTPError as exc:
+            raise ExternalApiError("OpenWeatherMap", str(exc)) from exc
+
+        if response.status_code >= 400:
+            raise ExternalApiError("OpenWeatherMap", f"ícone {icon} indisponível")
+
+        media_type = response.headers.get("content-type", "image/png").split(";", 1)[0].strip()
+        if not media_type.startswith("image/"):
+            media_type = "image/png"
+        return response.content, media_type

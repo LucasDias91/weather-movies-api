@@ -61,6 +61,8 @@ Swagger: http://127.0.0.1:8000/swagger
 | Método | Rota | Uso |
 |--------|------|-----|
 | GET | `/api/recommendations?city=` | Clima + filmes mapeados |
+| GET | `/api/locations?q=` | Sugestões de municípios brasileiros |
+| GET | `/api/weather/icons/{icon}` | PNG do ícone do clima, servido pela API |
 | GET | `/api/watchlist` | Lista com filtro, ordenação e paginação |
 | POST | `/api/watchlist` | Salvar filme |
 | PUT | `/api/watchlist/{id}` | Atualizar status/nota |

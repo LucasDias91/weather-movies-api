@@ -10,6 +10,12 @@ class CityNotFoundError(Exception):
         super().__init__(f"City not found: {city}")
 
 
+class InvalidWeatherIconError(Exception):
+    def __init__(self, icon: str) -> None:
+        self.icon = icon
+        super().__init__(f"Invalid weather icon: {icon}")
+
+
 class ExternalApiError(Exception):
     def __init__(self, provider: str, detail: str) -> None:
         self.provider = provider
