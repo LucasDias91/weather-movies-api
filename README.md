@@ -9,7 +9,7 @@ Camadas (igual ao FileManager): rotas (`app/api/`) → serviços (`app/services/
 1. Copie `.env.example` para `.env` e preencha as chaves:
 
    - [OpenWeatherMap](https://openweathermap.org/api) — cadastro gratuito, rota usada: `GET /data/2.5/weather`
-   - [TMDB](https://developer.themoviedb.org/) — cadastro gratuito (extra de criatividade)
+   - [TMDB](https://developer.themoviedb.org/docs) — cadastro gratuito, rota usada: `GET /3/discover/movie`
 
 2. Na pasta `weather-movies-api`, execute **`start.bat`**. O script cria `.venv`, instala `requirements.txt` e abre o Swagger.
 
@@ -46,6 +46,16 @@ docker run --rm -p 8000:8000 --env-file .env weather-movies-api
 ```
 
 Swagger: http://127.0.0.1:8000/swagger
+
+## API externa documentada (TMDB)
+
+A TMDB é a API externa dos filmes e dos cartazes. A API própria consulta, trata o resultado e devolve o JSON. Não há redirect para o site da TMDB.
+
+- Serviço: [TMDB API](https://developer.themoviedb.org/docs)
+- Licença: uso gratuito não comercial, com atribuição à TMDB. Uso comercial exige autorização. Termos: https://www.themoviedb.org/api-terms-of-use
+- Cadastro da key: https://www.themoviedb.org/signup e, em seguida, https://www.themoviedb.org/settings/api
+- Rota usada: `GET https://api.themoviedb.org/3/discover/movie`
+- Cartazes: `https://image.tmdb.org/t/p/w500/{poster_path}`
 
 ## Variáveis de ambiente
 
