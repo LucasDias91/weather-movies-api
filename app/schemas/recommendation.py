@@ -23,3 +23,11 @@ class RecommendationResponse(BaseModel):
     weather: WeatherInfo
     mapped_genres: list[str]
     movies: list[MovieCard]
+
+
+class PlaceSuggestion(BaseModel):
+    name: str
+    state: str | None = None
+    country: str | None = None
+    lat: float | None = None
+    lon: float | None = None

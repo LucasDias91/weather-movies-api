@@ -13,5 +13,9 @@ def get_watchlist_service(db: Session = Depends(get_db)) -> WatchlistService:
     return WatchlistService(WatchlistRepository(db))
 
 
+def get_weather_service() -> WeatherService:
+    return WeatherService()
+
+
 def get_recommendation_service() -> RecommendationService:
-    return RecommendationService(WeatherService(), MovieService())
+    return RecommendationService(get_weather_service(), MovieService())

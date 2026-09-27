@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.locations import router as locations_router
 from app.api.recommendations import router as recommendations_router
 from app.api.watchlist import router as watchlist_router
 from app.db.database import init_db
@@ -55,4 +56,5 @@ app.add_middleware(
 )
 
 app.include_router(recommendations_router, prefix="/api")
+app.include_router(locations_router, prefix="/api")
 app.include_router(watchlist_router, prefix="/api")

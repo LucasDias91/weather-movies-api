@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import unicodedata
+
 import httpx
 
 from app.core.config import (
@@ -7,8 +9,45 @@ from app.core.config import (
     OPENWEATHER_API_KEY,
     OPENWEATHER_BASE_URL,
 )
-from app.schemas.recommendation import WeatherInfo
+from app.schemas.recommendation import PlaceSuggestion, WeatherInfo
 from app.services.errors import CityNotFoundError, ExternalApiError, MissingApiKeyError
+
+
+_MUNICIPALITIES: list[tuple[str, str]] | None = None
+_IBGE_MUNICIPIOS_URL = (
+    "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome"
+)
+
+
+def _fold(text: str) -> str:
+    normalized = unicodedata.normalize("NFD", text)
+    return "".join(char for char in normalized if unicodedata.category(char) != "Mn").casefold()
+
+
+def _state_code(item: dict) -> str | None:
+    micro = (item.get("microrregiao") or {}).get("mesorregiao") or {}
+    uf = (micro.get("UF") or {}).get("sigla")
+    if uf:
+        return uf
+    immediate = (item.get("regiao-imediata") or {}).get("regiao-intermediaria") or {}
+    return (immediate.get("UF") or {}).get("sigla")
+
+
+def _brazilian_municipalities() -> list[tuple[str, str]]:
+    global _MUNICIPALITIES
+    if _MUNICIPALITIES is not None:
+        return _MUNICIPALITIES
+
+    response = httpx.get(_IBGE_MUNICIPIOS_URL, timeout=max(HTTP_TIMEOUT_SECONDS, 20))
+    response.raise_for_status()
+    rows: list[tuple[str, str]] = []
+    for item in response.json() or []:
+        name = (item.get("nome") or "").strip()
+        state = _state_code(item)
+        if name and state:
+            rows.append((name, state))
+    _MUNICIPALITIES = rows
+    return rows
 
 
 class WeatherService:
@@ -60,3 +99,62 @@ class WeatherService:
             main=first.get("main") or "",
             icon=first.get("icon"),
         )
+
+    def search_places(self, query: str, *, limit: int = 6) -> list[PlaceSuggestion]:
+        folded = _fold(query.strip())
+        if len(folded) < 2:
+            return []
+
+        try:
+            matches = [
+                PlaceSuggestion(name=name, state=state, country="BR")
+                for name, state in _brazilian_municipalities()
+                if _fold(name).startswith(folded)
+            ]
+        except httpx.HTTPError:
+            matches = []
+
+        if matches:
+            return matches[:limit]
+
+        return self._search_openweather_places(query.strip(), folded, limit=limit)
+
+    def _search_openweather_places(
+        self,
+        query: str,
+        folded: str,
+        *,
+        limit: int,
+    ) -> list[PlaceSuggestion]:
+        if not OPENWEATHER_API_KEY:
+            raise MissingApiKeyError("OpenWeatherMap")
+
+        url = f"{OPENWEATHER_BASE_URL}/geo/1.0/direct"
+        params = {"q": query, "limit": 10, "appid": OPENWEATHER_API_KEY}
+        try:
+            response = httpx.get(url, params=params, timeout=HTTP_TIMEOUT_SECONDS)
+        except httpx.HTTPError as exc:
+            raise ExternalApiError("OpenWeatherMap", str(exc)) from exc
+
+        if response.status_code == 401:
+            raise ExternalApiError("OpenWeatherMap", "API key inválida")
+        if response.status_code >= 400:
+            raise ExternalApiError("OpenWeatherMap", response.text[:300])
+
+        places: list[PlaceSuggestion] = []
+        for item in response.json() or []:
+            local_names = item.get("local_names") or {}
+            name = local_names.get("pt") or item.get("name") or ""
+            if not name or not _fold(name).startswith(folded):
+                continue
+            places.append(
+                PlaceSuggestion(
+                    name=name,
+                    state=item.get("state"),
+                    country=item.get("country"),
+                    lat=float(item["lat"]) if item.get("lat") is not None else None,
+                    lon=float(item["lon"]) if item.get("lon") is not None else None,
+                )
+            )
+        brazilian = [place for place in places if (place.country or "").upper() == "BR"]
+        return (brazilian or places)[:limit]

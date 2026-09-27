@@ -66,7 +66,22 @@ Swagger: http://127.0.0.1:8000/swagger
 | PUT | `/api/watchlist/{id}` | Atualizar status/nota |
 | DELETE | `/api/watchlist/{id}` | Remover |
 
-Mapeamento clima → gênero: chuva/tempestade → terror/thriller/drama; céu limpo → comédia/aventura; nublado → documentário/drama; neve → romance/família; neblina → mistério; calor extremo → ação.
+## Critério de filme por clima
+
+O gênero vem do campo `main` da OpenWeather, não de uma escala contínua de temperatura. Se a temperatura for igual ou maior que `HEAT_THRESHOLD_C` (padrão **32°C**), a sessão é só **Ação**, qualquer que seja o céu. Abaixo disso:
+
+| Tempo (`main`) | Gêneros |
+|----------------|---------|
+| Chuva, garoa ou tempestade (`Rain`, `Drizzle`, `Thunderstorm`) | Terror, Thriller e Drama |
+| Céu limpo (`Clear`) | Comédia e Aventura |
+| Nublado (`Clouds`) | Documentário e Drama |
+| Neve (`Snow`) | Romance e Família |
+| Neblina, fumaça, névoa, areia ou poeira (`Mist`, `Smoke`, `Haze`, `Fog`, `Sand`, `Dust`) | Mistério |
+| Cinzas (`Ash`) | Terror e Thriller |
+| Rajada ou tornado (`Squall`, `Tornado`) | Ação e Thriller |
+| Qualquer outro | Drama e Comédia |
+
+Com esses gêneros, o TMDB devolve até 12 filmes, em pt-BR, ordenados por popularidade e sem conteúdo adulto. Quando há mais de um gênero, o filme precisa ter todos ao mesmo tempo.
 
 CORS está configurado para desenvolvimento (`allow_origins=["*"]`).
 
