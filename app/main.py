@@ -14,7 +14,7 @@ OPENAPI_TAGS = [
         "name": "recommendations",
         "description": (
             "GET que consulta a OpenWeatherMap, trata o clima (mapeamento para gêneros) "
-            "e devolve filmes do TMDB. Não há redirect para as APIs externas."
+            "e devolve filmes do TMDB."
         ),
     },
     {
@@ -36,9 +36,8 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="Weather Movies API",
     description=(
-        "API secundária do MVP Plataforma A: recomenda filmes com base no clima. "
+        "Recomenda filmes com base no clima. "
         "Consome OpenWeatherMap (API externa da nota) e TMDB, persiste a watchlist em SQLite. "
-        "Tabelas são criadas automaticamente na inicialização."
     ),
     version="0.1.0",
     lifespan=lifespan,
