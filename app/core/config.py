@@ -5,8 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
-OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY", "").strip()
-TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "").strip()
+# Chaves da entrega. Um .env local substitui estes valores.
+_OPENWEATHER_KEY = "10112d0b2aafe22c63cf823ae0203080"
+_TMDB_KEY = "be9580ddba8f4ca443282cd72f937c6c"
+
+OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY", "").strip() or _OPENWEATHER_KEY
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "").strip() or _TMDB_KEY
 OPENWEATHER_BASE_URL = os.environ.get(
     "OPENWEATHER_BASE_URL", "https://api.openweathermap.org"
 ).rstrip("/")

@@ -6,12 +6,14 @@ Camadas (igual ao FileManager): rotas (`app/api/`) → serviços (`app/services/
 
 ## Início rápido com `start.bat` (Windows)
 
-1. Copie `.env.example` para `.env` e preencha as chaves:
+As chaves da OpenWeatherMap e da TMDB já estão em `app/core/config.py`. Quem clonar o repositório sobe a API sem criar um `.env`.
 
-   - [OpenWeatherMap](https://openweathermap.org/api) — cadastro gratuito, rota usada: `GET /data/2.5/weather`
-   - [TMDB](https://developer.themoviedb.org/docs) — cadastro gratuito, rota usada: `GET /3/discover/movie`
+Para usar chaves próprias, copie `.env.example` para `.env` e preencha:
 
-2. Na pasta `weather-movies-api`, execute **`start.bat`**. O script cria `.venv`, instala `requirements.txt` e abre o Swagger.
+- [OpenWeatherMap](https://openweathermap.org/api) — cadastro gratuito, rota usada: `GET /data/2.5/weather`
+- [TMDB](https://developer.themoviedb.org/docs) — cadastro gratuito, rota usada: `GET /3/discover/movie`
+
+Na pasta `weather-movies-api`, execute **`start.bat`**. O script cria `.venv`, instala `requirements.txt` e abre o Swagger.
 
 ## Se o `start.bat` não funcionar (execução manual)
 
@@ -42,8 +44,10 @@ Na primeira execução o SQLite `weather_movies.db` é criado automaticamente.
 
 ```bash
 docker build -t weather-movies-api .
-docker run --rm -p 8000:8000 --env-file .env weather-movies-api
+docker run --rm -p 8000:8000 weather-movies-api
 ```
+
+As chaves da entrega já vão na imagem. Para substituí-las, acrescente `--env-file .env`.
 
 Swagger: http://127.0.0.1:8000/swagger
 
@@ -61,8 +65,8 @@ A TMDB é a API externa dos filmes e dos cartazes. A API própria consulta, trat
 
 | Variável | Descrição | Padrão |
 |----------|-----------|--------|
-| `OPENWEATHER_API_KEY` | Chave da OpenWeatherMap (obrigatória para recomendações) | vazio |
-| `TMDB_API_KEY` | Chave da TMDB (obrigatória para filmes) | vazio |
+| `OPENWEATHER_API_KEY` | Substitui a chave da OpenWeatherMap | chave da entrega em `config.py` |
+| `TMDB_API_KEY` | Substitui a chave da TMDB | chave da entrega em `config.py` |
 | `DATABASE_URL` | URL SQLAlchemy | `sqlite:///./weather_movies.db` |
 | `HEAT_THRESHOLD_C` | Temperatura (°C) a partir da qual o gênero vira Ação | `32` |
 
